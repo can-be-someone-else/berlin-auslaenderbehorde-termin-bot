@@ -8,6 +8,7 @@ import java.util.Properties;
 public class Config {
     public static long FORM_REFRESH_PERIOD_IN_SECONDS;
     public static long TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
+    public static String ANTI_CAPTCHA_CLIENT_KEY;
     static InputStream inputStream;
 
     public static void getPropValues(){
@@ -22,6 +23,7 @@ public class Config {
             }
             FORM_REFRESH_PERIOD_IN_SECONDS = Long.parseLong(prop.getProperty("FORM_REFRESH_PERIOD_IN_SECONDS"));
             TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS = Long.parseLong(prop.getProperty("TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS"));
+            ANTI_CAPTCHA_CLIENT_KEY = prop.getProperty("ANTI_CAPTCHA_CLIENT_KEY");
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         } finally {

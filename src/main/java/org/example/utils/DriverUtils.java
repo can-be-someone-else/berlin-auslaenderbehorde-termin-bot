@@ -1,21 +1,25 @@
 package org.example.utils;
 
 
+import com.anti_captcha.Api.RecaptchaV2Proxyless;
+import com.anti_captcha.Helper.DebugHelper;
+import org.example.exceptions.AntiCaptchaFailed;
+import org.openqa.selenium.By;
 import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
+import static org.example.Config.ANTI_CAPTCHA_CLIENT_KEY;
 import static org.example.Config.TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
 
 public class DriverUtils {
@@ -68,6 +72,61 @@ public class DriverUtils {
                 return false;
             }
         });
+    }
+
+    public static String getAnitCaptchaResponse(String websiteUrl, String websiteKey) throws MalformedURLException, InterruptedException, AntiCaptchaFailed {
+        DebugHelper.setVerboseMode(true);
+
+        RecaptchaV2Proxyless api = new RecaptchaV2Proxyless();
+        api.setClientKey(ANTI_CAPTCHA_CLIENT_KEY);
+        System.out.println(api.getBalance());
+
+        String gCaptcha;
+
+        api.setSoftId(0);
+        api.setWebsiteUrl(new URL(websiteUrl));
+        api.setWebsiteKey(websiteKey);
+
+        if (!api.createTask()) {
+            String str = "API v2 send failed." + api.getErrorMessage();
+            DebugHelper.out(str, DebugHelper.Type.ERROR);
+            logger.info(str);
+            throw new AntiCaptchaFailed(str);
+        } else if (!api.waitForResult()) {
+            String str = "Could not solve the captcha.";
+            DebugHelper.out(str, DebugHelper.Type.ERROR);
+            logger.info(str);
+            throw new AntiCaptchaFailed(str);
+        } else {
+            gCaptcha = api.getTaskSolution().getGRecaptchaResponse();
+            DebugHelper.out("Result: g-captcha solved", DebugHelper.Type.SUCCESS);
+            logger.info("g-captcha solved");
+        }
+
+        return gCaptcha;
+    }
+
+    public static void SolveReCaptchaV2(RemoteWebDriver driver) throws MalformedURLException, InterruptedException, AntiCaptchaFailed {
+        Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+
+        String gCaptchaClassName = "g-recaptcha";
+        String dataSiteKeyAtrName = "data-sitekey";
+        String dayaSiteKey = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS))
+                .until(__ -> driver.findElement(By.className(gCaptchaClassName)).getAttribute(dataSiteKeyAtrName));
+
+        String CurrentUrl = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS))
+                .until(__ -> driver.getCurrentUrl());
+
+        String gResponse = getAnitCaptchaResponse(CurrentUrl, dayaSiteKey);
+
+        new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS))
+                .until(ExpectedConditions.presenceOfElementLocated((By.id("g-recaptcha-response"))));
+
+        Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+
+        driver.executeScript(String.format("document.getElementById(\"g-recaptcha-response\").innerHTML = \"%s\";", gResponse));
+
+        Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
     }
 
     public static ChromeOptions getChromeOptions() {

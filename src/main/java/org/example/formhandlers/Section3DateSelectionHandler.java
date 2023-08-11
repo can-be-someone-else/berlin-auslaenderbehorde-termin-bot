@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.example.Config.TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
 import static org.example.enums.Section2FormElementsEnum.ERROR_MESSAGE;
+import static org.example.utils.DriverUtils.SolveReCaptchaV2;
 import static org.example.utils.IoUtils.increaseVerifiedTimeslotMetric;
 import static org.example.utils.IoUtils.savePage;
 
@@ -42,6 +43,12 @@ public class Section3DateSelectionHandler implements IFormHandler {
         handleAppointmentSelection();
         Thread.sleep(2000);
         handleTimeSelection();
+        Thread.sleep(2000);
+        try {
+            SolveReCaptchaV2(driver);
+        } catch (Exception e) {
+            throw new FormValidationFailed("Validating captcha failed");
+        }
         Thread.sleep(2000);
         sendForm();
         return isErrorMessageShow();
