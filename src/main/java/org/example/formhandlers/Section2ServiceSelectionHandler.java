@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.example.Config.TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
@@ -54,7 +55,12 @@ public class Section2ServiceSelectionHandler implements IFormHandler {
     public boolean fillAndSendForm() throws InterruptedException {
         fillForm();
         if (serviceTypeLabelValue.equals("Apply for a residence title")) {
-            sendForm();
+            try {
+                iteratedSendFrom();
+            } catch (Exception e) {
+                logger.error("Exception occured during iterated send form. Reason :", e);
+                sendForm();
+            }
         }
         try {
             verifyFormSubmission();
@@ -62,6 +68,7 @@ public class Section2ServiceSelectionHandler implements IFormHandler {
             logger.error("Exception occured during verification of the form submission. REason :", e);
             sendForm();
         }
+        logger.info("sasasasassssssssssssssssssssssssssssssssssss");
         return isDateSelectionOpened();
     }
 
@@ -320,5 +327,51 @@ public class Section2ServiceSelectionHandler implements IFormHandler {
             logger.info("\n");
             return result;
         });
+    }
+
+    private boolean[] verifyIteratedFormSubmission() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        AtomicInteger i = new AtomicInteger();
+        AtomicBoolean isDateOpened = new AtomicBoolean(false);
+        AtomicBoolean isError = new AtomicBoolean(false);
+        wait.until(__ -> {
+            logger.info("\n");
+            i.getAndIncrement();
+            logger.info("verify iteration: " + i);
+            isError.compareAndSet(false, isErrorMessageShow());
+            if (!isError.get()) {
+                isDateOpened.compareAndSet(false, isDateSelectionOpened());
+            }
+            boolean result = isError.get() || isDateOpened.get();
+            logger.info("\n");
+            return result;
+        });
+        return new boolean[] { isError.get(), isDateOpened.get() };
+    }
+
+    private void iteratedSendFrom() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofMinutes(25));
+        AtomicInteger i = new AtomicInteger();
+        try {
+            wait.until(__ -> {
+                sendForm();
+                i.getAndIncrement();
+                logger.info("send iteration: " + i);
+                boolean result = false;
+                while (true){
+                    boolean[] verifyData = verifyIteratedFormSubmission();
+                    boolean isError = verifyData[0];
+                    boolean isDateOpened = verifyData[1];
+
+                    if (!isError) {
+                        result = isDateOpened;
+                    } else break;
+                }
+                logger.info("\n");
+                return result;
+            });
+        } catch (org.openqa.selenium.TimeoutException e) {
+            logger.info("Form waiting timeout");
+        }
     }
 }
