@@ -68,7 +68,6 @@ public class Section2ServiceSelectionHandler implements IFormHandler {
             logger.error("Exception occured during verification of the form submission. REason :", e);
             sendForm();
         }
-        logger.info("sasasasassssssssssssssssssssssssssssssssssss");
         return isDateSelectionOpened();
     }
 
