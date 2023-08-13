@@ -357,15 +357,15 @@ public class Section2ServiceSelectionHandler implements IFormHandler {
                 i.getAndIncrement();
                 logger.info("send iteration: " + i);
                 boolean result = false;
-                while (true){
-                    boolean[] verifyData = verifyIteratedFormSubmission();
-                    boolean isError = verifyData[0];
-                    boolean isDateOpened = verifyData[1];
 
-                    if (!isError) {
-                        result = isDateOpened;
-                    } else break;
+                boolean[] verifyData = verifyIteratedFormSubmission();
+                boolean isError = verifyData[0];
+                boolean isDateOpened = verifyData[1];
+
+                if (!isError) {
+                    result = isDateOpened;
                 }
+
                 logger.info("\n");
                 return result;
             });
