@@ -51,7 +51,7 @@ public class Section3DateSelectionHandler implements IFormHandler {
         }
         Thread.sleep(2000);
         sendForm();
-        return isErrorMessageShow();
+        return !isErrorMessageShow();
     }
 
     @VisibleForTesting
