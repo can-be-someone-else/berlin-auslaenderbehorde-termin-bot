@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.example.Config.TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
 import static org.example.enums.Section4FormParameterEnum.RESIDENCE_PERMIT_NUMBER;
@@ -90,9 +91,25 @@ public class Section4VisaFormHandler implements IFormHandler {
     @VisibleForTesting
     protected void enterFirstName() {
         String elementName = Section4FormParameterEnum.FIRSTNAME.getName();
-        WebElement element = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS))
-                .until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input[name='" + elementName + "']")));
-        element.sendKeys(firstName);
+        AtomicInteger i = new AtomicInteger();
+        new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS))
+                .until(__ -> {
+                    try {
+                        i.getAndIncrement();
+                        logger.info("enter first name iteration: " + i);
+                        WebElement element = driver.findElement(By.cssSelector("select[name='" + elementName + "']"));
+                        element.sendKeys(firstName);
+                        return true;
+                    } catch (Exception e) {
+                        savePage(driver, this.getClass().getSimpleName(), "enterFirstName");
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            return false;
+                        }
+                        return false;
+                    }
+                });
     }
 
     @VisibleForTesting
