@@ -9,6 +9,7 @@ public class Config {
     public static long FORM_REFRESH_PERIOD_IN_SECONDS;
     public static long TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
     public static String ANTI_CAPTCHA_CLIENT_KEY;
+    public static Boolean IS_TIMESLOT_SELECT_REVERSED;
     static InputStream inputStream;
 
     public static void getPropValues(){
@@ -24,6 +25,7 @@ public class Config {
             FORM_REFRESH_PERIOD_IN_SECONDS = Long.parseLong(prop.getProperty("FORM_REFRESH_PERIOD_IN_SECONDS"));
             TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS = Long.parseLong(prop.getProperty("TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS"));
             ANTI_CAPTCHA_CLIENT_KEY = prop.getProperty("ANTI_CAPTCHA_CLIENT_KEY");
+            IS_TIMESLOT_SELECT_REVERSED = Boolean.valueOf(prop.getProperty("IS_TIMESLOT_SELECT_REVERSED"));
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         } finally {

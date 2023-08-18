@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.Config.IS_TIMESLOT_SELECT_REVERSED;
 import static org.example.Config.TIMEOUT_FOR_INTERACTING_WITH_ELEMENT_IN_SECONDS;
 import static org.example.enums.Section2FormElementsEnum.ERROR_MESSAGE;
 import static org.example.utils.DriverUtils.SolveReCaptchaV2;
@@ -132,14 +133,27 @@ public class Section3DateSelectionHandler implements IFormHandler {
     protected void selectTimeslot(Select select) throws InterruptedException {
         String elementDescription = "TIMESLOT";
         List<WebElement> availableHours = select.getOptions();
-        for (int i = 0; i < availableHours.size(); i++) {
-            String timeSlot = availableHours.get(i).getText();
-            if (timeSlot != null || !timeSlot.equals("")) {
-                logger.info(String.format("Available timeslot: Timeslot: %s, Value: %s", i, timeSlot));
-                String selectValue = availableHours.get(0).getText();
-                select.selectByIndex(i);
-                logger.info("TimeSlot selected succesfully:", selectValue);
-                break;
+        if (IS_TIMESLOT_SELECT_REVERSED) {
+            for (int i = availableHours.size() - 1; i >= 0; i--) {
+                String timeSlot = availableHours.get(i).getText();
+                if (timeSlot != null || !timeSlot.equals("")) {
+                    logger.info(String.format("Available timeslot: Timeslot: %s, Value: %s", i, timeSlot));
+                    String selectValue = availableHours.get(0).getText();
+                    select.selectByIndex(i);
+                    logger.info("TimeSlot selected succesfully:", selectValue);
+                    break;
+                }
+            }
+        } else {
+            for (int i = 0; i < availableHours.size(); i++) {
+                String timeSlot = availableHours.get(i).getText();
+                if (timeSlot != null || !timeSlot.equals("")) {
+                    logger.info(String.format("Available timeslot: Timeslot: %s, Value: %s", i, timeSlot));
+                    String selectValue = availableHours.get(0).getText();
+                    select.selectByIndex(i);
+                    logger.info("TimeSlot selected succesfully:", selectValue);
+                    break;
+                }
             }
         }
         Thread.sleep(1000);
