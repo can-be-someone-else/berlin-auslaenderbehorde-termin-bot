@@ -97,7 +97,7 @@ public class Section4VisaFormHandler implements IFormHandler {
                     try {
                         i.getAndIncrement();
                         logger.info("enter first name iteration: " + i);
-                        WebElement element = driver.findElement(By.cssSelector("select[name='" + elementName + "']"));
+                        WebElement element = driver.findElement(By.cssSelector("input[name='" + elementName + "']"));
                         element.sendKeys(firstName);
                         return true;
                     } catch (Exception e) {
